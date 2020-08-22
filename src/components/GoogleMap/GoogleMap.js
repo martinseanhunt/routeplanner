@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react'
+import React, { useEffect, useRef } from 'react'
 
 import { useRouteContext } from '../../contexts/route/RouteContext'
 
@@ -10,13 +10,12 @@ const GoogleMap = () => {
   const mapRef = useRef()
   const line = useRef()
   const map = useRef()
+  const listener = useRef()
 
   const { state, dispatch } = useRouteContext()
 
-  console.log('here', state.coords.length)
-
   useEffect(() => {
-    let coords = []
+    // Initialize the map and marker listener
 
     // Add script here rather than in the index file so that if, in the future, 
     // we have routes that don't use the map, we don't need to load it for them.
@@ -28,8 +27,8 @@ const GoogleMap = () => {
       window.initMap = () => {
         map.current = new window.google.maps
           .Map(mapRef.current, defaultMapOptions)
-          
-        map.current.addListener('click', placeMarker)
+        
+        listener.current = map.current.addListener('click', placeMarker)
       }
 
       document.head.appendChild(script)
@@ -39,12 +38,23 @@ const GoogleMap = () => {
     if(!window.google || !window.window.google.maps) addScript()
   }, [])
 
+  // TODO: consolodate this and the newline funciton, only run them when there's
+  // been an update to the state. Set an updated property so we don't have to 
+  // deep compare. 
+  useEffect(() => {
+    // recreate the listener on every re render when state changes so we have
+    // access to the up to date state when calling the add funciton.
+    if(listener.current) window.google.maps.event
+      .removeListener(listener.current)
+
+    if(map.current) listener.current = map.current
+      .addListener('click', placeMarker)
+  }) // TODO
+
   const placeMarker = ({ latLng }) => {
     // Add a unique identifier to each marker so find it in the saved coords
     //  and we can edit later.
     const markerId = state.coords.length
-
-    console.log(markerId);
 
     const marker = new window.google.maps.Marker({
       position: latLng,
@@ -74,25 +84,20 @@ const GoogleMap = () => {
       }
     })
 
-    /*
     // Listen for changes to marker position so we can redraw the line after
     // a user drags to move a marker.
-    window.google.maps.event.addListener(marker, 'dragend', () => {
-      // TODO: Persist to context
-      coords = coords.map(coord => coord.markerId === marker.markerId
-        ? {
-          markerId,
-          coords: {
-            lat: marker.position.lat(),
-            lng: marker.position.lng()
-          }
+    window.google.maps.event.addListener(marker, 'dragend', () => dispatch({
+      type: 'EDIT_WAYPOINT', 
+      payload: {
+        markerId,
+        coords: {
+          lat: marker.position.lat(),
+          lng: marker.position.lng()
         }
-        : coord
-      )
-    }) */
+      }
+    }))
   }
 
-  // TODO: DEEP COMPARE
   useEffect(() => {
     const newLine = path => {
       // Clear any existing line so we don't draw over the top of it
@@ -105,8 +110,6 @@ const GoogleMap = () => {
           strokeOpacity: 1.0,
           strokeWeight: 6
       })
-
-      console.log(map.current)
 
       // Draw the line to the map
       line.current.setMap(map.current)

@@ -5,10 +5,17 @@ const initialState = {
 const cartReducer =(state, { type, payload }) => {
   switch(type) {
     case 'ADD_WAYPOINT':
-      console.log('hi')
       return {
         ...state,
         coords: [...state.coords, payload]
+      }
+    case 'EDIT_WAYPOINT':
+      return {
+        ...state,
+        coords: state.coords.map(coord => coord.markerId === payload.markerId
+          ? payload
+          : coord  
+        )
       }
     default:
       return state
