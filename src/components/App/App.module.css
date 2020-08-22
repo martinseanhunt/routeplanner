@@ -1,0 +1,6 @@
+
+.grid {
+  display: grid;
+  grid-template-columns: 388px 1fr;
+  height: 100vh;
+}
