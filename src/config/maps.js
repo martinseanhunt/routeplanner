@@ -10,6 +10,14 @@ export const defaultMapOptions = {
     fullscreenControl: false,
     styles: [
       {
+        "featureType": "poi.attraction",
+        "stylers": [
+          {
+            "visibility": "off"
+          }
+        ]
+      },
+      {
         "featureType": "poi.business",
         "stylers": [
           {
@@ -43,6 +51,7 @@ export const defaultMapOptions = {
       },
       {
         "featureType": "poi.school",
+        "elementType": "geometry",
         "stylers": [
           {
             "visibility": "off"
