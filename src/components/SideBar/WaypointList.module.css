@@ -1,0 +1,46 @@
+.list {
+  margin-top: 40px;
+}
+
+.listItem { 
+  color: #fff;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.listItemDrag {
+  border-top: 2px solid #4C4C4C;
+}
+
+.listItemLeft {
+  display: flex;
+  align-items: center;
+}
+
+.dragButton {
+  cursor: grab;
+  border: none;
+  padding: none;
+  background: none;
+  outline: none;
+  color: #737373;
+  font-size: 20px;
+  line-height: 20px;
+  margin-right: 5px;
+}
+
+.delete {
+  border: 2px solid #737373;
+  border-radius: 3px;
+  background: none;
+  font-size: 12px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.delete:hover {
+  background: #4C4C4C;
+}

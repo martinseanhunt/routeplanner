@@ -1,3 +1,22 @@
 .sidebar { 
   background: #383838;
+  display: grid;
+  grid-template-rows: 43px 1fr 50px;
+  padding: 25px 15px;
+  max-height: 100vh;
+  height: 100vh;
+}
+
+.sidebarContent {
+  overflow: scroll;
+}
+
+.title {
+  color: #fff;
+  font-size: 22px;
+  font-weight: bold;
+  margin: 0 10px;
+  padding-bottom: 18px;
+  border-bottom: 3px solid #4C4C4C;
+  display: block;
 }

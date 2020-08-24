@@ -100,3 +100,21 @@ export const defaultMapOptions = {
       }
     ]
   }
+
+export const defaultMarkerOptions = {
+  draggable: true,
+  label: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: '12px'
+  },
+  icon: {
+      url: '/oval.png'   
+  }
+}
+
+export const defaultLineOptions = {
+  strokeColor: '#1086E8',
+  strokeOpacity: 1.0,
+  strokeWeight: 6
+}

@@ -1,8 +1,12 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useCallback } from 'react'
 
 import { useRouteContext } from '../../contexts/route/RouteContext'
 
-import { defaultMapOptions } from '../../config/maps'
+import { 
+  defaultMapOptions, 
+  defaultMarkerOptions,
+  defaultLineOptions
+} from '../../config/maps'
 const MAPS_API_KEY = process.env.REACT_APP_MAPS_API_KEY
 const MAPS_BASE_URI = process.env.REACT_APP_MAPS_BASE_URI
 
@@ -14,27 +18,22 @@ const GoogleMap = () => {
 
   const { state, dispatch } = useRouteContext()
 
-  // TODO: Tidy up listeners on unmount
-
-  const createMarker = (markerId, position) => {
-    // TODO remove settings to config
+  const createMarker = useCallback((markerId, position) => {
     const marker = new window.google.maps.Marker({
+      ...defaultMarkerOptions,
       markerId,
       position,
       map: map.current,
-      draggable: true,
-      label: {
-        color: '#fff',
-        text: `${markerId}`,
-        fontWeight: 'bold',
-        fontSize: '12px'
+      label: { 
+        ...defaultMarkerOptions.label, 
+        text: `${markerId}`
       },
       icon: {
-          url: '/oval.png',
-          size: new window.google.maps.Size(28, 28),
-          scaledSize: new window.google.maps.Size(28, 28),
-          origin: new window.google.maps.Point(0, 0),
-          anchor: new window.google.maps.Point(14, 14)      
+        ...defaultMarkerOptions.icon,
+        size: new window.google.maps.Size(28, 28),
+        scaledSize: new window.google.maps.Size(28, 28),
+        origin: new window.google.maps.Point(0, 0),
+        anchor: new window.google.maps.Point(14, 14)   
       }
     })
 
@@ -52,23 +51,21 @@ const GoogleMap = () => {
     }))
 
     markers.current = [...markers.current, marker]
-  }
+  }, [dispatch])
 
-  const drawLines = () => {
+  const drawLines = useCallback(() => {
     // Clear any existing line so we don't draw over the top of it
     if(line.current) line.current.setMap(null)
 
     // Construct the line
     line.current = new window.google.maps.Polyline({
-        path: state.waypoints.map(({ coords }) => coords),
-        strokeColor: '#1086E8',
-        strokeOpacity: 1.0,
-        strokeWeight: 6
+        ...defaultLineOptions,
+        path: state.waypoints.map(({ coords }) => coords)
     })
 
     // Draw the line to the map
     line.current.setMap(map.current)
-  }
+  }, [state.waypoints])
 
   // Initialize the map and marker listener
   useEffect(() => {
@@ -96,8 +93,14 @@ const GoogleMap = () => {
     }    
 
     // Add script to document
-    if(!window.google || !window.window.google.maps) addScript()
-  }, [])
+    if(!window.google || !window.maps) addScript()
+
+    // Clear up listeners on unmount
+    return () => {
+      window.google.maps.event.clearListeners(map.current, 'click')
+      window.google.maps.event.clearListeners(map.current, 'dragend')
+    }
+  }, [dispatch])
 
 
   // Add a marker to the map from a new waypoint in state
@@ -110,7 +113,7 @@ const GoogleMap = () => {
     }
 
     if(state.addMarker) addWaypoint()
-  }, [state.addMarker])
+  }, [state.addMarker, dispatch, state.waypoints, createMarker, drawLines])
 
   // Redraw the lines when we drag a marker
   useEffect(() => {
@@ -120,7 +123,7 @@ const GoogleMap = () => {
     }
 
     if(state.redrawLines) redrawLines()
-  }, [state.redrawLines])
+  }, [state.redrawLines, dispatch, drawLines])
 
   // Delete waypoint
   useEffect(() => {
@@ -141,7 +144,7 @@ const GoogleMap = () => {
     }
 
     if(state.deleteWaypoint) deleteWaypoint()
-  }, [state.deleteWaypoint])
+  }, [state.deleteWaypoint, dispatch, drawLines])
 
 
   return <div ref={mapContainerRef} />
